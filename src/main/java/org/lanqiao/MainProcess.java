@@ -14,6 +14,7 @@ import java.util.List;
  */
 public class MainProcess {
     public static String filePath ="/home/project/db.sql";
+    public static String target ="/home/project/db.md";
     public static void main(String[] args) {
          startBuild(args);
     }
@@ -32,7 +33,8 @@ public class MainProcess {
 
     private static void buildMarkdown(List<String> sqls) {
         try {
-            BufferedWriter bw =new BufferedWriter(new FileWriter(filePath));
+            BufferedWriter bw =new BufferedWriter(new FileWriter(target));
+
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.lanqiao.util.CommandUtil;
+
 /**
  *
  *  1 目的 解析 SQL 文件 生成 markdown 表格
@@ -18,204 +20,102 @@ public class MainProcess {
     public static String target ="/home/project/db.md";
     public static void main(String[] args) {
          startBuild(args);
-         main2(args);
+        // main2(args);
     }
 
     private static void startBuild(String[] args) {
-        if(args!=null&&args.length>0){
-           //导出数据库内容成文件  数据库名，用户名，密码
-            System.out.println(" 导出数据库内容成文件 ");
+
+        if(args!=null&&args.length>=2){
+            String p ="";
+            if(args.length>2){
+                p =   " -p"+args[2];
+            }
+           //导出数据库内容成文件  数据库名，用户名，[密码]
+            System.out.println("导出数据库内容成文件，数据库名："+args[0]+"，用户名："+args[1]+"，密码："+p);
+            try {  
+                CommandUtil.invockCmdLines(new String[]{"mysqldump -u"+args[1]+p+" --opt -d "+args[0]+" > " +filePath});
+            } catch (Exception e) {
+              
+            }
         }
         // 直接将文件转成 MarkDown
         //1 解析SQL语句
-        buildMarkdown(doParseSQL(filePath));
         //2 将内容写成 文件
+        buildMarkdown(doParseSQL());
+        System.out.println("导出 MarkDown 成功！！");
 
     }
 
     private static void buildMarkdown(List<String> sqls) {
+            String tableName="";
+            String tableComment="";
         try {
             BufferedWriter bw =new BufferedWriter(new FileWriter(target));
+            bw.append("# 数据库的设计与创建\r\n");
+            bw.append("## 数据库表设计\r\n");
+            bw.append("根据需求分析，【待补充】\r\n");
+            bw.append("实体间的关系如下:【换行后待补充】\r\n");
+            bw.append("\r\n");
+            bw.append("\r\n");
+            bw.append("\r\n");
+            bw.append("实体间的 ER 图如下图所示：【图待补充】\r\n");
+            bw.append("\r\n");
+            bw.append("根据系统的 ER 图，可以设计出【待补充】项目的数据库实体。根据以上实体，可以设计出详细的【待补充】项目的数据库表，具体如下:\r\n");
+            bw.append("\r\n");
+            for(String s:sqls){
+                //1  获取表名 表描述 字段名 字段类型 字段描述 【主键、非空、索引、描述】
+                tableName = s.substring(s.indexOf("table")+5,s.indexOf("(")).trim();//表名必然存在
+                tableComment = "";//表注释不一定存在
 
+                bw.append("\r\n**表名:"+tableName +"("+(tableComment.isEmpty()?"【待补充】":tableComment)+")**");
+                bw.append("\r\n");
+                bw.append("| 字段名称     | 数据类型      | 说明                                   |");
+                bw.append("\r\n");
+                bw.append("| ------------ | --------- | -------------------------------------- |");
+                bw.append("\r\n");
+                //2  获取字段名 字段类型 字段描述 【主键、非空、索引、描述】
+                bw.append("\r\n");
+            }
+            bw.append("\r\n【可选】其中，【XX】表用来保存【XX】信息，为了更方便的实现对【XX】信息的查询，在设计【XX】表时，冗余了部分字段。\r\n");
+            bw.append("\r\n【可选】同时为了更好的提升性能，表与表之前不建立物理外键，关联的逻辑外键在编码时需要注意。\r\n");
+            bw.append("\r\n【可选】表中所有的 `modifyDate` 字段设置成 `timestamp` ,且根据时间戳自动更新。\r\n");
+            bw.append("\r\n【可选】最终，【待补充】项目的数据库结构如图所示：\r\n");
+            bw.append("\r\n");
+            bw.append("[数据库素材下载地址](https://labfile.oss.aliyuncs.com/courses/课程号/名称.sql)");
             bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
-    private static List<String> doParseSQL(String filePath) {
+    private static List<String> doParseSQL() {
         List<String> sqls =new ArrayList<>();
+   
+        // 1 获取文件中的 SQL 内容
+        try {
+            BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));
+            String lineStr;
+            StringBuilder sql = new StringBuilder();
+            while ((lineStr = input.readLine()) != null) {
+                // 2 解决大小写问题，统一为小写
+                lineStr = lineStr.toLowerCase().replace("`","");
+                // 3 拼接SQL语句以createtable 开头 以 ;号结尾   排除注释和空行
+                if (lineStr.trim().length() > 0 && !lineStr.startsWith("--") && !lineStr.startsWith("/*") ) {
+                    sql.append(" "+lineStr);
+                }
+                if (sql.toString().contains(";")) {
+                    // 4 获取完整以createtable 开头 以 ;号结尾的建表语句
+                    if(sql.substring(0, sql.toString().indexOf(";") + 1).trim().replace(" ","").startsWith("createtable")){
+                        sqls.add(sql.substring(0, sql.toString().indexOf(";") + 1).trim());
+                    }
+                    sql.delete(0, sql.length());
+                }
+            }
+            input.close();
+        } catch (IOException e) {
+            throw new RuntimeException("请确保指定的路径下存在指定的文件 db.sql，或使用正确的用户名和密码进行导出生成");
+        };
         return sqls;
     }
-    public static void main2(String[] args) {
-        System.out.println("请输入文件路径，例如：E:\\a.sql");
-        Scanner sc = new Scanner(System.in);
-        String input = sc.nextLine();
-        String path = "E:\\ceims.sql";  //文件路径
-        File file = new File(input);
-        StringBuffer sbf = new StringBuffer();
-        BufferedReader reader = null;
-        StringBuffer table_name_buff = new StringBuffer();
-        String tableString;
-        int tablenum = 0;
-        FileWriter fileWriter = null;
-
-
-
-
-        //把sql文件按照空行分段，每一段存到map1中，num表示有多少段
-        int num = 0;
-        Map<String, String> sql_section_map = new HashMap<String,String>();
-
-        Map<String, String> table_section_map = new HashMap<String,String>();    //存储表片段
-
-        Map<String, String> table_name_map = new HashMap<String,String>();    //存储表名
-        Map<String, String> table_description_map = new HashMap<String,String>();	//存储表描述
-        Map<String, String> row_name_map = new HashMap<String,String>();	//存储表列名
-        Map<String, String> map_row_type = new HashMap<String,String>();	//存储列类型
-        Map<String, String> map_row_description = new HashMap<String,String>();	//存储列描述
-
-
-
-        try {
-            reader = new BufferedReader(new FileReader(file));
-            String tempStr;
-
-            while ((tempStr = reader.readLine()) != null) {
-                sbf.append(tempStr+"\n");
-                if(tempStr.equals("")){
-                    sql_section_map.put("duan"+num, sbf.toString());
-                    sbf.setLength(0);
-                    num++;
-                }
-            }
-            reader.close();
-
-            String aaString = sbf.toString();		//读取sql文件后转为字符串
-
-            String table_name_regex = "CREATE TABLE `(\\S*)`";   //匹配表名
-            String table_description_regex = "COMMENT='([\u4e00-\u9fa5_a-zA-Z0-9\\S]*)';";   //匹配表描述
-            String regex_row_description = "COMMENT '([\u4e00-\u9fa5_a-zA-Z0-9\\S]*)',";	//匹配列描述
-            String table_row_name_regex = "  `(\\S*)`";   //匹配字段
-            String regex_type = "  `(\\S*)` (\\S*)";   //匹配字段类型
-
-            // 创建 Pattern 对象
-            Pattern table_name_Pattern = Pattern.compile(table_name_regex);
-            Pattern table_description_Pattern = Pattern.compile(table_description_regex);
-            Pattern table_row_name_Pattern = Pattern.compile(table_row_name_regex);
-            Pattern pattern_row_type = Pattern.compile(regex_type);
-            Pattern pattern_row_description = Pattern.compile(regex_row_description);
-            // 现在创建 matcher 对象
-
-            for (int i = 0; i < num; i++) {
-                tableString = sql_section_map.get("duan"+i);
-                Matcher m1 = table_name_Pattern.matcher(tableString);
-
-                if(m1.find()){
-                    int a = m1.start(1);
-                    //m1.find(a);  //find(int start)  //有参函数表示  重新设置该匹配器，然后尝试从指定的索引开始找，start：索引。
-                    table_name_buff.append(m1.group(1)+",");
-                    table_section_map.put("table"+tablenum, sql_section_map.get("duan"+i));
-                    tablenum++;
-                }else{
-                    sql_section_map.remove("duan"+i);
-                }
-            }
-
-
-            /**************************************段处理完成，下面根据获取的表的数量进行解析************************************************/
-
-            String [] table_name_array = table_name_buff.toString().split(","); //表名
-            for (int i = 0; i < table_name_array.length; i++) {
-                table_name_map.put("table"+i, table_name_array[i]);
-            }
-
-
-            /**
-             * 每一行分开，匹配列名
-             */
-            String aa = "";
-            String bb = "";
-            String cc = "";
-            for (int i = 0; i < table_section_map.size(); i++) {
-                String[] aStrings = table_section_map.get("table"+i).split("\n");
-                Matcher m2 = table_description_Pattern.matcher(table_section_map.get("table"+i));
-                if (m2.find()) {
-                    table_description_map.put("table"+i, m2.group(1));
-                    //System.out.println("table"+i+":"+table_description_map.get("table"+i));
-                }
-                for (int j = 0; j < aStrings.length; j++) {
-                    Matcher m3 = table_row_name_Pattern.matcher(aStrings[j]);
-                    Matcher m4 = pattern_row_type.matcher(aStrings[j]);
-                    Matcher m5 = pattern_row_description.matcher(aStrings[j]);
-                    //System.out.println(m3.groupCount());
-                    while(m3.find()){
-                        aa +=m3.group(1)+",";
-                    }
-                    while(m4.find()){
-                        bb +=m4.group(2)+",";
-                        if(m5.find()){
-                            cc +=m5.group(1)+",";
-                        }else {
-                            cc += "null"+",";
-                        }
-                    }
-
-                }
-                row_name_map.put("table"+i, aa);
-                map_row_type.put("table"+i, bb);
-                map_row_description.put("table"+i, cc);
-                aa = "";
-                bb = "";
-                cc = "";
-            }
-
-            //组织输出md文件内容
-            String text = "# 数据库文档\n\n";
-            text += "## 数据表列表\n\n";
-            String table_desstr = "";   //表描述
-            for (int i = 0; i < table_section_map.size(); i++) {
-                table_desstr = table_description_map.get("table"+i);
-                String tablenamestr = table_name_map.get("table"+i);
-                if (table_desstr != null) {
-                    text += "## 表名："+tablenamestr+"("+table_description_map.get("table"+i)+")\n\n";
-                }else {
-                    text += "## 表名："+tablenamestr+"\n\n";
-                }
-
-                //text += "## 表名："+tablenamestr+"("+table_description_map.get("table"+i)+")\n\n";
-                text += "字段名|数据类型|字段描述\n";
-                text += ":---:|:---:|:---:\n";
-                String[] rownames = row_name_map.get("table"+i).split(",");
-                String[] rowtypes = map_row_type.get("table"+i).split(",");
-                String[] rowdes = map_row_description.get("table"+i).split(",");
-                try {
-                    for (int j = 0; j < rownames.length; j++) {
-                        if(rowdes[j].equals("null")){
-                            rowdes[j]="";
-                        }
-                        text += rownames[j]+"|"+rowtypes[j]+"|"+rowdes[j]+"\n";
-                    }
-                } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    System.out.println("字段类型与字段描述匹配出错，请查看匹配规则与sql文件内容是否相符，\n测试过程中发现，自动导出的sql文件有可能出现字段名字后出现两个空格，匹配规则为1个空格");
-                }
-                //System.out.println(text);
-            }
-            System.out.println("表描述"+table_description_map);
-
-            //文件输出
-            fileWriter =  new FileWriter("E:\\a.md",false);
-            fileWriter.write(text);
-            fileWriter.close();
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
+   
 }

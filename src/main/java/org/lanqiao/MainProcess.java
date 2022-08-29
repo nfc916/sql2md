@@ -2,10 +2,7 @@ package org.lanqiao;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.lanqiao.util.CommandUtil;
+import org.lanqiao.util.*;
 
 /**
  *
@@ -41,7 +38,7 @@ public class MainProcess {
         // 直接将文件转成 MarkDown
         //1 解析SQL语句
         //2 将内容写成 文件
-        buildMarkdown(doParseSQL());
+        buildMarkdown(SqlParseUtil.doParseSQL(filePath));
         System.out.println("导出 MarkDown 成功！！");
 
     }
@@ -49,6 +46,9 @@ public class MainProcess {
     private static void buildMarkdown(List<String> sqls) {
             String tableName="";
             String tableComment="";
+            String [] tableFilds =null;
+            String [] tableFildsType =null;
+            String [] tableFildsComment =null;
         try {
             BufferedWriter bw =new BufferedWriter(new FileWriter(target));
             bw.append("# 数据库的设计与创建\r\n");
@@ -62,12 +62,12 @@ public class MainProcess {
             bw.append("\r\n");
             bw.append("根据系统的 ER 图，可以设计出【待补充】项目的数据库实体。根据以上实体，可以设计出详细的【待补充】项目的数据库表，具体如下:\r\n");
             bw.append("\r\n");
-            for(String s:sqls){
+            for(String sql:sqls){
                 //1  获取表名 表描述 字段名 字段类型 字段描述 【主键、非空、索引、描述】
-                tableName = s.substring(s.indexOf("table")+5,s.indexOf("(")).trim();//表名必然存在
-                tableComment = "";//表注释不一定存在
-
-                bw.append("\r\n**表名:"+tableName +"("+(tableComment.isEmpty()?"【待补充】":tableComment)+")**");
+                tableName = sql.substring(sql.indexOf("table")+5,sql.indexOf("(")).trim();//表名必然存在
+                tableComment = getTableComment(sql.trim().replace(" ", ""));//表注释不一定存在
+                tableFilds = getTableFileds(sql.substring(sql.indexOf("(")+1,sql.lastIndexOf(")")));//字段列表必然存在在一对括号中
+                bw.append("\r\n**表名:"+tableName +"("+(tableComment==null?"【待补充】":tableComment)+")**");
                 bw.append("\r\n");
                 bw.append("| 字段名称     | 数据类型      | 说明                                   |");
                 bw.append("\r\n");
@@ -87,35 +87,26 @@ public class MainProcess {
             e.printStackTrace();
         }
     }
-
-    private static List<String> doParseSQL() {
-        List<String> sqls =new ArrayList<>();
-   
-        // 1 获取文件中的 SQL 内容
-        try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));
-            String lineStr;
-            StringBuilder sql = new StringBuilder();
-            while ((lineStr = input.readLine()) != null) {
-                // 2 解决大小写问题，统一为小写
-                lineStr = lineStr.toLowerCase().replace("`","");
-                // 3 拼接SQL语句以createtable 开头 以 ;号结尾   排除注释和空行
-                if (lineStr.trim().length() > 0 && !lineStr.startsWith("--") && !lineStr.startsWith("/*") ) {
-                    sql.append(" "+lineStr);
-                }
-                if (sql.toString().contains(";")) {
-                    // 4 获取完整以createtable 开头 以 ;号结尾的建表语句
-                    if(sql.substring(0, sql.toString().indexOf(";") + 1).trim().replace(" ","").startsWith("createtable")){
-                        sqls.add(sql.substring(0, sql.toString().indexOf(";") + 1).trim());
-                    }
-                    sql.delete(0, sql.length());
-                }
-            }
-            input.close();
-        } catch (IOException e) {
-            throw new RuntimeException("请确保指定的路径下存在指定的文件 db.sql，或使用正确的用户名和密码进行导出生成");
-        };
-        return sqls;
+    /**
+     *  获取表字段数组 必然存在，个数不确定 格式为：在一个完整的最外层括号中
+     * @param sql
+     * @return
+     */
+    private static String[] getTableFileds(String sql) {
+        System.out.println(sql);
+        return null;
     }
+    /**
+     * 获取表描述 ，可能不存在 ，如果存在是 comment='表描述' 中的内容
+     * @param sql 去掉了所有空格
+     * @return  替换掉 '' 后的结果
+     */
+    private static String getTableComment(String sql) {
+        if(sql.lastIndexOf("comment")>sql.lastIndexOf(")")){
+              return  sql.substring(sql.lastIndexOf("comment")+9,sql.indexOf(";")).replace("'", "");
+        }
+        return null;
+    }
+   
    
 }

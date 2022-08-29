@@ -1,8 +1,5 @@
 package org.lanqiao.util;
 
-import java.io.*;
-import java.util.*;
-
 /**
  * 命令行工具类
  */

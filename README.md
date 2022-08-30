@@ -49,9 +49,15 @@ CREATE TABLE `house_subscribe`  (
 
  ### 使用方法
  1. 如果只存在数据库文件，先导入到数据库中  （目的：统一SQL文件的内容）
+    ```bash
     mysql -uroot -e"source your db.sql"
+    ```
  2. 如果已经存在数据库  执行打好的 Jar 包或执行 MVN 命令:
+    ```bash
     java -jar 库名 用户名 [密码]
+    ```
     或者
+    ```bash
     mvn compile exec:java -Dexec.mainClass=org.lanqiao.MainProcess -Dexec.args="库名 用户名 [密码]"
+    ```
   

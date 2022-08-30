@@ -1,4 +1,4 @@
-Before:
+### Before:
 
 CREATE TABLE `house_subscribe`  (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -16,7 +16,7 @@ CREATE TABLE `house_subscribe`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 27 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '预约看房信息表' ROW_FORMAT = Dynamic;
 
 
-After:
+### After:
 
 预约看房信息表(house_subscribe):
 
@@ -34,7 +34,7 @@ After:
 | admin_id        | bigint     |  用户id                     |
 
 
-Description:
+### Description:
 
 
 目的： 解析 SQL 文件 生成 markdown 表格
@@ -45,3 +45,12 @@ Description:
 
 要求： 尽少依赖第三方、需要排除特殊字符，仅保存字段、【类型[长度]】、说明/注释等信息
  
+
+ ### 使用方法
+ 1. 如果只存在数据库文件，先导入到数据库中  （目的：统一SQL文件的内容）
+    mysql -uroot -e"source your db.sql"
+ 2. 如果已经存在数据库  执行打好的 Jar 包或执行 MVN 命令:
+    java -jar 库名 用户名 [密码]
+    或者
+    mvn compile exec:java -Dexec.mainClass=org.lanqiao.MainProcess -Dexec.args="库名 用户名 [密码]"
+  

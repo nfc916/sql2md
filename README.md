@@ -64,3 +64,4 @@ CREATE TABLE `house_subscribe`  (
     mvn compile exec:java -Dexec.mainClass=org.lanqiao.MainProcess -Dexec.args="库名 用户名 [密码]"
     ```
   
+ 3. 指令及部分代码仅支持在 Linux 系统，如果是 Windows 系统需要修改相应内容，如路径

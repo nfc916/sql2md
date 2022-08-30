@@ -60,13 +60,8 @@ public class DbEnumChecker {
                     canotStartWord=prop.getProperty("canotStartWord").trim().split(",");
                     fieldTypes=prop.getProperty("fieldTypes").trim().split(",");
                     canotEndWord=prop.getProperty("canotEndWord").trim().split(",");
-                    System.out.println(Arrays.toString(canotStartWord));
-                    System.out.println(Arrays.toString(fieldTypes));
-                    System.out.println(Arrays.toString(canotEndWord));
             } catch (IOException e) {
                     System.out.println("静态加载出错，修改 settings 配置文件");
             }
-
     }
-    
 }

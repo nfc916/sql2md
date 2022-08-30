@@ -57,7 +57,7 @@ CREATE TABLE `house_subscribe`  (
     ```
  2. 如果已经存在数据库  执行打好的 Jar 包或执行 MVN 命令:
     ```bash
-    java -jar 库名 用户名 [密码]
+    java -jar sql2md.jar 库名 用户名 [密码]
     ```
     或者
     ```bash

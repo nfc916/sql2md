@@ -32,7 +32,7 @@ CREATE TABLE `house_subscribe`  (
 | last_update_time| datetime   | 记录更新时间                |
 | order_time      | datetime   | 预约时间                    |
 | telephone       | varchar(255)    | 联系电话               |
-| admin_id        | bigint     |  用户id                     |
+| admin_id        | bigint     |  房源发布者id                     |
 
 
 ### Description:

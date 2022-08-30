@@ -45,8 +45,11 @@ CREATE TABLE `house_subscribe`  (
 输出结果： 保存 字段名   字段类型  字段描述
 
 要求： 尽少依赖第三方、需要排除特殊字符，仅保存字段、【类型[长度]】、说明/注释等信息
- 
 
+路径已经固定： 
+- 数据库文件： /home/project/db.sql
+- MarkDown文件： /home/project/db.md
+ 
  ### 使用方法
  1. 如果只存在数据库文件，先导入到数据库中  （目的：统一SQL文件的内容）
     ```bash

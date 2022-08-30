@@ -72,7 +72,6 @@ public class MainProcess {
                 bw.append("\r\n");
                 //2  获取字段名 字段类型 字段描述 【主键、非空、索引、描述】
                 for(String [] field:tableFilds){
-                   // System.out.println(field[0]);
                    bw.append("| "+field[0]+" | "+field[1]+" | "+field[2]+" |");
                    bw.append("\r\n");
                 }
@@ -97,7 +96,7 @@ public class MainProcess {
      */
     private static  List<String []> getTableFields(String sql) {
        List<String []> list =new ArrayList<String []>();
-        String [] fds  = sql.split(",");
+        String [] fds  = sql.split(",。");
         for(String fd:fds){
             if(DbEnumChecker.fieldCheckerFirst(fd)){
                 continue;
@@ -118,7 +117,7 @@ public class MainProcess {
      */
     private static String getTableFieldsComment(String fieldsComment) {
         String str =  fieldsComment.replace("unsigned", "").replaceAll("character.+comment", "").replace("'", "").replace("\"", "").replace("auto_increment", "主键自增");
-        str = str.replace("default null", "默认为空").replaceAll("default.+comment", "").replace("comment", "");
+        str = str.replace("default null", "默认为空").replaceAll("default.+comment", "").replace("comment", "").replace("default current_timestamp", "");
         return str.contains("not null")?str.replace("not null", "").trim()+" 不能为空":str.trim();
     }
 
@@ -133,6 +132,5 @@ public class MainProcess {
         }
         return null;
     }
-   
-   
+  
 }

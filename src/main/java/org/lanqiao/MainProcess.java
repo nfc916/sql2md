@@ -17,7 +17,6 @@ public class MainProcess {
     public static String target ="/home/project/db.md";
     public static void main(String[] args) {
          startBuild(args);
-        // main2(args);
     }
 
     private static void startBuild(String[] args) {
@@ -46,9 +45,7 @@ public class MainProcess {
     private static void buildMarkdown(List<String> sqls) {
             String tableName="";
             String tableComment="";
-            String [] tableFilds =null;
-            String [] tableFildsType =null;
-            String [] tableFildsComment =null;
+            List<String []> tableFilds =null;
         try {
             BufferedWriter bw =new BufferedWriter(new FileWriter(target));
             bw.append("# 数据库的设计与创建\r\n");
@@ -66,7 +63,7 @@ public class MainProcess {
                 //1  获取表名 表描述 字段名 字段类型 字段描述 【主键、非空、索引、描述】
                 tableName = sql.substring(sql.indexOf("table")+5,sql.indexOf("(")).trim();//表名必然存在
                 tableComment = getTableComment(sql.trim().replace(" ", ""));//表注释不一定存在
-                tableFilds = getTableFileds(sql.substring(sql.indexOf("(")+1,sql.lastIndexOf(")")));//字段列表必然存在在一对括号中
+                tableFilds = getTableFields(sql.substring(sql.indexOf("(")+1,sql.lastIndexOf(")")));//字段列表必然存在在一对括号中
                 bw.append("\r\n**表名:"+tableName +"("+(tableComment==null?"【待补充】":tableComment)+")**");
                 bw.append("\r\n");
                 bw.append("| 字段名称     | 数据类型      | 说明                                   |");
@@ -74,6 +71,12 @@ public class MainProcess {
                 bw.append("| ------------ | --------- | -------------------------------------- |");
                 bw.append("\r\n");
                 //2  获取字段名 字段类型 字段描述 【主键、非空、索引、描述】
+                for(String [] field:tableFilds){
+                   // System.out.println(field[0]);
+                   bw.append("| "+field[0]+" | "+field[1]+" | "+field[2]+" |");
+                   bw.append("\r\n");
+                }
+
                 bw.append("\r\n");
             }
             bw.append("\r\n【可选】其中，【XX】表用来保存【XX】信息，为了更方便的实现对【XX】信息的查询，在设计【XX】表时，冗余了部分字段。\r\n");
@@ -88,14 +91,37 @@ public class MainProcess {
         }
     }
     /**
-     *  获取表字段数组 必然存在，个数不确定 格式为：在一个完整的最外层括号中
+     *  获取表字段数组 必然存在，个数不确定 格式为：在一个完整的最外层括号中 ( 字段名 字段类型  字段描述 )
      * @param sql
      * @return
      */
-    private static String[] getTableFileds(String sql) {
-        System.out.println(sql);
-        return null;
+    private static  List<String []> getTableFields(String sql) {
+       List<String []> list =new ArrayList<String []>();
+        String [] fds  = sql.split(",");
+        for(String fd:fds){
+            if(DbEnumChecker.fieldCheckerFirst(fd)){
+                continue;
+            }
+            String [] ds= new String [3];
+            ds[0]= fd.trim().split(" ")[0].trim();
+            ds[1]= fd.trim().split(" ")[1].trim();
+            ds[2]= getTableFieldsComment(fd.replace(fd.trim().split(" ")[0], " ").replace(fd.trim().split(" ")[1], "").trim());
+            if(DbEnumChecker.fieldCheckerName(ds[0])&& DbEnumChecker.fieldCheckerType(ds[1]))
+                 list.add(ds);
+        }
+        return list;
     }
+    /**
+     * 获取字段描述
+     * @param fieldsComment
+     * @return
+     */
+    private static String getTableFieldsComment(String fieldsComment) {
+        String str =  fieldsComment.replace("unsigned", "").replaceAll("character.+comment", "").replace("'", "").replace("\"", "").replace("auto_increment", "主键自增");
+        str = str.replace("default null", "默认为空").replaceAll("default.+comment", "").replace("comment", "");
+        return str.contains("not null")?str.replace("not null", "").trim()+" 不能为空":str.trim();
+    }
+
     /**
      * 获取表描述 ，可能不存在 ，如果存在是 comment='表描述' 中的内容
      * @param sql 去掉了所有空格

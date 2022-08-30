@@ -1,5 +1,6 @@
 ### Before:
 
+```sql
 CREATE TABLE `house_subscribe`  (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
   `house_id` int(11) NOT NULL COMMENT '房源id',
@@ -14,11 +15,11 @@ CREATE TABLE `house_subscribe`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `index_on_user_and_house`(`house_id`, `user_id`) USING BTREE COMMENT '用户和房子唯一索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 27 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '预约看房信息表' ROW_FORMAT = Dynamic;
-
+```
 
 ### After:
 
-预约看房信息表(house_subscribe):
+**表名:house_subscribe(预约看房信息表)**
 
 | 字段名          | 数据类型   | 说明                        |
 | --------------- | ---------  | --------------------------- |
